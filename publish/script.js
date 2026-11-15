@@ -48,6 +48,28 @@
     if (!pairFor(editorForm.elements.id.value)) editorForm.elements.pairCategory.value = editorForm.elements.type.value;
   });
   let selected = null, variant = 'regular', toastTimer;
+  let audioContext;
+  function playMenuClick() {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      audioContext = audioContext || new AudioContextClass();
+      if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const start = audioContext.currentTime;
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(520, start);
+      oscillator.frequency.exponentialRampToValueAtTime(390, start + 0.045);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.035, start + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.06);
+      oscillator.connect(gain).connect(audioContext.destination);
+      oscillator.start(start);
+      oscillator.stop(start + 0.065);
+    } catch (error) { console.warn('Menu sound unavailable.', error); }
+  }
+  $$('#home .home-link').forEach(button => button.addEventListener('click', playMenuClick));
   function toast(message) { const el=$('#toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200); }
   // Validate the entire backup before changing local storage. Older tracker logs
   // use snapshot field names and an ISO date instead of a separate local day.

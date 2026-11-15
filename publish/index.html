@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#111111"><meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Workout Tracker">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <title>Workout Tracker</title><link rel="stylesheet" href="style.css">
   <style>
     [hidden] { display: none !important; }
@@ -11,6 +13,7 @@
     dialog { max-height: 90vh; max-height: 90dvh; }
     nav button, .small-action { min-height: 44px; }
     .brand-button { border: 0; padding: 0; background: none; }
+    .brand-icon { width: 21px; height: 21px; vertical-align: -4px; margin-right: 4px; fill: currentColor; }
     #home h1 { text-align: center; }
     .home-menu { display: grid; gap: 10px; margin-top: 38px; }
     .backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; }
@@ -52,7 +55,7 @@
 </head>
 <body>
   <div class="app home-active">
-    <header><button class="brand brand-button" type="button" data-go="home"><span class="brand-mark">✳</span> WORKOUT TRACKER<span class="brand-dot">.</span></button></header>
+    <header><button class="brand brand-button" type="button" data-go="home"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0l2.1 7.8L21 3l-4.8 6.9L24 12l-7.8 2.1L21 21l-6.9-4.8L12 24l-2.1-7.8L3 21l4.8-6.9L0 12l7.8-2.1L3 3l6.9 4.8z"/></svg> WORKOUT TRACKER<span class="brand-dot">.</span></button></header>
     <main>
       <section id="home" class="page">
         <h1>Workout<br>tracker<span class="accent">.</span></h1>
