@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111111"><meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Workout Tracker</title><link rel="stylesheet" href="style.css">
+  <style>
+    [hidden] { display: none !important; }
+    nav[hidden] { display: none; }
+    .app { padding-left: calc(22px + env(safe-area-inset-left, 0px)); padding-right: calc(22px + env(safe-area-inset-right, 0px)); }
+    dialog { max-height: 90vh; max-height: 90dvh; }
+    nav button, .small-action { min-height: 44px; }
+    .brand-button { border: 0; padding: 0; background: none; }
+    #home h1 { text-align: center; }
+    .home-menu { display: grid; gap: 10px; margin-top: 38px; }
+    .backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; }
+    .backup-actions button { min-height: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); font-weight: 700; }
+    .app.home-active { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+    .app.home-active main { flex: 1; display: flex; flex-direction: column; }
+    #home:not([hidden]) { flex: 1; display: flex; flex-direction: column; }
+    #home .backup-actions { margin-top: auto; padding-top: 28px; }
+    .home-link { display: flex; justify-content: center; align-items: center; width: 100%; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--text); text-align: center; font-size: 18px; font-weight: 700; }
+    .home-link-primary { background: var(--lime); border-color: var(--lime); color: #171717; }
+    .log-cycle { margin: 0 0 22px; }
+    .pair-box { border: 1px solid #686868; border-radius: 18px; padding: 11px; background: #242424; display: grid; gap: 8px; }
+    .pair-label { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: .12em; padding: 2px 5px; }
+    .pair-box .card { box-shadow: none; }
+    .pair-settings { border-top: 1px solid var(--line); padding: 18px 0 0; }
+    .pair-settings h3 { font-size: 13px; margin: 0 0 14px; }
+    .pair-settings [hidden] { display: none; }
+    .days-since { flex: 0 0 48px; color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
+    :root { --bg: #111; --panel: #1c1c1c; --line: #383838; --muted: #aaa; --text: #f3f3f3; --lime: #eee; }
+    body { background: radial-gradient(ellipse at 78% 0, #2b2b2b 0, transparent 35%), var(--bg); }
+    .action { border-color: #666; background: #303030; }
+    .empty { border-color: #505050; }
+    .cycle-button { background: #242424; }
+    nav { background: #191919ed; }
+    nav button { color: #999; }
+    dialog { background: #1b1b1b; }
+    label { color: #d3d3d3; }
+    input, select, .variants { background: #111; }
+    .primary, #toast { color: #171717; }
+    .variants button.active { background: #393939; }
+    .form-error { color: #ddd; }
+    @media (max-width: 360px) {
+      .app { padding-left: calc(16px + env(safe-area-inset-left, 0px)); padding-right: calc(16px + env(safe-area-inset-right, 0px)); }
+      .days-since { flex-basis: 38px; }
+      .card { gap: 8px; }
+      .action { padding-left: 10px; padding-right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app home-active">
+    <header><button class="brand brand-button" type="button" data-go="home"><span class="brand-mark">✳</span> WORKOUT TRACKER<span class="brand-dot">.</span></button></header>
+    <main>
+      <section id="home" class="page">
+        <h1>Workout<br>tracker<span class="accent">.</span></h1>
+        <div class="home-menu">
+          <button class="home-link" type="button" data-go="exercises">List</button>
+          <button class="home-link" type="button" data-go="history">History</button>
+          <button class="home-link home-link-primary" type="button" data-go="log">Log</button>
+        </div>
+        <div class="backup-actions"><button type="button" id="import-data">Import data</button><button type="button" id="export-data">Export data</button></div>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+      </section>
+      <section id="log" class="page" hidden>
+        <h1>Log<span class="accent">.</span></h1>
+        <p class="muted log-cycle" id="cycle-caption"></p>
+        <div id="quick-list" class="stack"></div>
+      </section>
+      <section id="exercises" class="page" hidden><div class="page-heading"><div><h1>List<span class="accent">.</span></h1></div><button id="add" class="icon-button" aria-label="Add exercise">+</button></div><button id="cycle-button" class="cycle-button">Cycle settings <span id="cycle-label"></span> ↗</button><div id="exercise-list"></div></section>
+      <section id="history" class="page" hidden><h1>History<span class="accent">.</span></h1><div class="date-row"><label for="history-date">SELECT A DAY</label><input id="history-date" type="date"></div><div id="history-list" class="stack"></div></section>
+    </main>
+    <nav aria-label="Main navigation" hidden><button data-go="home"><span>⌂</span>Home</button><button data-go="exercises"><span>▦</span>List</button><button data-go="history"><span>◷</span>History</button><button data-go="log"><span>＋</span>Log</button></nav>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <dialog id="editor"><form id="exercise-form"><div class="dialog-heading"><div><h2 id="editor-title">New exercise</h2></div><button type="button" class="close" data-close="editor" aria-label="Close">×</button></div><input type="hidden" name="id"><label>Exercise name<input name="name" required maxlength="60" placeholder="e.g. Bench press"></label><div class="fields"><label>Category<select name="type"><option>Legs</option><option>Arms</option><option>Torso</option><option>Other</option></select></label><label>Sets<input name="sets" type="number" min="1" max="50" required value="3"></label><label>Reps<input name="reps" required placeholder="8 or 8>6" value="8"></label><label>Weight<input name="weight" required placeholder="0 or 20>15" value="0"></label><label>Sessions per cycle<input name="limit" type="number" min="1" max="999" required value="3"></label></div><details><summary>Alternative exercise <span>OPTIONAL ＋</span></summary><div class="alt-fields"><label>Name<input name="altName" maxlength="60" placeholder="e.g. Dumbbell press"></label><div class="fields"><label>Sets<input name="altSets" type="number" min="1" max="50" value="3"></label><label>Reps<input name="altReps" placeholder="8 or 8>6" value="8"></label><label>Weight<input name="altWeight" placeholder="0 or 20>15" value="0"></label></div></div></details><p class="form-error" role="alert"></p><button class="primary" type="submit">Save exercise <span>↗</span></button></form></dialog>
+  <dialog id="logger"><form id="log-form"><div class="dialog-heading"><div><h2 id="log-title"></h2><p id="log-meta" class="muted"></p></div><button type="button" class="close" data-close="logger" aria-label="Close">×</button></div><div id="variants" class="variants" hidden><button type="button" data-variant="regular" class="active">Regular</button><button type="button" data-variant="alternative">Alternative</button></div><div class="fields"><label>Reps<input name="reps" required placeholder="8 or 8>6"></label><label>Weight<input name="weight" required placeholder="0 or 20>15"></label></div><p class="form-error" role="alert"></p><button class="primary" type="submit">Log session <span>✓</span></button></form></dialog>
+  <script src="script.js"></script>
+</body></html>
