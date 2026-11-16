@@ -25,6 +25,9 @@
     .home-link { display: flex; justify-content: center; align-items: center; width: 100%; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--text); text-align: center; font-size: 18px; font-weight: 700; }
     .home-link-primary { background: var(--lime); border-color: var(--lime); color: #171717; }
     .log-cycle { margin: 0 0 22px; }
+    .log-cycle-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 22px; }
+    .log-cycle-row .log-cycle { margin: 0; min-width: 0; }
+    .cycle-sets { flex: none; color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
     .pair-box { border: 1px solid #686868; border-radius: 18px; padding: 11px; background: #242424; display: grid; gap: 8px; }
     .pair-label { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: .12em; padding: 2px 5px; }
     .pair-box .card { box-shadow: none; }
@@ -45,6 +48,17 @@
     .primary, #toast { color: #171717; }
     .variants button.active { background: #393939; }
     .form-error { color: #ddd; }
+    .icon-button, .close, .week-arrow { -webkit-appearance: none; appearance: none; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; line-height: 1; }
+    .week-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 28px 0 14px; }
+    .week-header h2 { margin: 0; font-size: 17px; text-align: center; }
+    .week-arrow { background: var(--panel); border: 1px solid var(--line); color: var(--text); font-size: 21px; }
+    .week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-bottom: 18px; }
+    .week-day { min-width: 0; min-height: 60px; padding: 8px 2px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); }
+    .week-day span { display: block; font-size: 10px; color: var(--muted); }
+    .week-day strong { display: block; margin-top: 4px; font-size: 16px; }
+    .week-day.selected { background: var(--text); border-color: var(--text); color: #111; }
+    .week-day.selected span { color: #555; }
+    .week-day.today:not(.selected) { border-color: #999; }
     @media (max-width: 360px) {
       .app { padding-left: calc(16px + env(safe-area-inset-left, 0px)); padding-right: calc(16px + env(safe-area-inset-right, 0px)); }
       .days-since { flex-basis: 38px; }
@@ -52,10 +66,11 @@
       .action { padding-left: 10px; padding-right: 10px; }
     }
   </style>
+  <link rel="stylesheet" href="themes.css">
 </head>
 <body>
   <div class="app home-active">
-    <header><button class="brand brand-button" type="button" data-go="home"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0l2.1 7.8L21 3l-4.8 6.9L24 12l-7.8 2.1L21 21l-6.9-4.8L12 24l-2.1-7.8L3 21l4.8-6.9L0 12l7.8-2.1L3 3l6.9 4.8z"/></svg> WORKOUT TRACKER<span class="brand-dot">.</span></button></header>
+    <header><button class="brand brand-button" type="button" data-go="home"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0l2.1 7.8L21 3l-4.8 6.9L24 12l-7.8 2.1L21 21l-6.9-4.8L12 24l-2.1-7.8L3 21l4.8-6.9L0 12l7.8-2.1L3 3l6.9 4.8z"/></svg> WORKOUT TRACKER<span class="brand-dot">.</span></button><button id="settings-button" class="settings-button" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 10h2V7h2V5h3v5h8V5h3v2h2v3h2v4h-2v3h-2v2h-3v-5H8v5H5v-2H3v-3H1z"/></svg></button></header>
     <main>
       <section id="home" class="page">
         <h1>Workout<br>tracker<span class="accent">.</span></h1>
@@ -69,15 +84,16 @@
       </section>
       <section id="log" class="page" hidden>
         <h1>Log<span class="accent">.</span></h1>
-        <p class="muted log-cycle" id="cycle-caption"></p>
+        <div class="log-cycle-row"><p class="muted log-cycle" id="cycle-caption"></p><span class="cycle-sets" id="today-sets"></span><span class="cycle-sets" id="cycle-sets"></span></div>
         <div id="quick-list" class="stack"></div>
       </section>
       <section id="exercises" class="page" hidden><div class="page-heading"><div><h1>List<span class="accent">.</span></h1></div><button id="add" class="icon-button" aria-label="Add exercise">+</button></div><button id="cycle-button" class="cycle-button">Cycle settings <span id="cycle-label"></span> ↗</button><div id="exercise-list"></div></section>
-      <section id="history" class="page" hidden><h1>History<span class="accent">.</span></h1><div class="date-row"><label for="history-date">SELECT A DAY</label><input id="history-date" type="date"></div><div id="history-list" class="stack"></div></section>
+      <section id="history" class="page" hidden><h1>History<span class="accent">.</span></h1><div class="week-header"><button class="week-arrow" id="prev-week" type="button" aria-label="Previous week">‹</button><h2 id="history-date-label"></h2><button class="week-arrow" id="next-week" type="button" aria-label="Next week">›</button></div><div id="week-days" class="week-days" aria-label="Days of the week"></div><div id="history-list" class="stack"></div></section>
     </main>
     <nav aria-label="Main navigation" hidden><button data-go="home"><span>⌂</span>Home</button><button data-go="exercises"><span>▦</span>List</button><button data-go="history"><span>◷</span>History</button><button data-go="log"><span>＋</span>Log</button></nav>
     <div id="toast" role="status" aria-live="polite"></div>
   </div>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Settings</h2><button type="button" class="close" data-close="settings-dialog" aria-label="Close settings">×</button></div><h3 class="settings-heading">Color</h3><div id="theme-options" class="theme-options" role="radiogroup" aria-label="Color theme"></div></dialog>
   <dialog id="editor"><form id="exercise-form"><div class="dialog-heading"><div><h2 id="editor-title">New exercise</h2></div><button type="button" class="close" data-close="editor" aria-label="Close">×</button></div><input type="hidden" name="id"><label>Exercise name<input name="name" required maxlength="60" placeholder="e.g. Bench press"></label><div class="fields"><label>Category<select name="type"><option>Legs</option><option>Arms</option><option>Torso</option><option>Other</option></select></label><label>Sets<input name="sets" type="number" min="1" max="50" required value="3"></label><label>Reps<input name="reps" required placeholder="8 or 8>6" value="8"></label><label>Weight<input name="weight" required placeholder="0 or 20>15" value="0"></label><label>Sessions per cycle<input name="limit" type="number" min="1" max="999" required value="3"></label></div><details><summary>Alternative exercise <span>OPTIONAL ＋</span></summary><div class="alt-fields"><label>Name<input name="altName" maxlength="60" placeholder="e.g. Dumbbell press"></label><div class="fields"><label>Sets<input name="altSets" type="number" min="1" max="50" value="3"></label><label>Reps<input name="altReps" placeholder="8 or 8>6" value="8"></label><label>Weight<input name="altWeight" placeholder="0 or 20>15" value="0"></label></div></div></details><p class="form-error" role="alert"></p><button class="primary" type="submit">Save exercise <span>↗</span></button></form></dialog>
   <dialog id="logger"><form id="log-form"><div class="dialog-heading"><div><h2 id="log-title"></h2><p id="log-meta" class="muted"></p></div><button type="button" class="close" data-close="logger" aria-label="Close">×</button></div><div id="variants" class="variants" hidden><button type="button" data-variant="regular" class="active">Regular</button><button type="button" data-variant="alternative">Alternative</button></div><div class="fields"><label>Reps<input name="reps" required placeholder="8 or 8>6"></label><label>Weight<input name="weight" required placeholder="0 or 20>15"></label></div><p class="form-error" role="alert"></p><button class="primary" type="submit">Log session <span>✓</span></button></form></dialog>
   <script src="script.js"></script>
