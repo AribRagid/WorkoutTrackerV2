@@ -191,17 +191,23 @@
         const exercises = pair.exerciseIds.map(find);
         if (exercises.length !== 2 || exercises.some(e => !e) || exercises.some(e => pairedIds.has(e.id))) continue;
         exercises.forEach(e => pairedIds.add(e.id));
-        items.push({ name: exercises[0].name, completed: exercises.every(e => count(e.id) >= e.perCycle), html: `<div class="pair-box"><span class="pair-label">↔ PAIRED</span>${exercises.map(e=>card(e)).join('')}</div>` });
+        items.push({ name: exercises[0].name, exercises, completed: exercises.every(e => count(e.id) >= e.perCycle), html: `<div class="pair-box"><span class="pair-label">↔ PAIRED</span>${exercises.map(e=>card(e)).join('')}</div>` });
       }
       return [{ type, items }];
     });
     for (const exercise of data.exercises) {
       if (!pairedIds.has(exercise.id)) {
         const group = groups.find(g => g.type === exercise.type) || groups.find(g => g.type === 'Other');
-        group.items.push({ name: exercise.name, completed: count(exercise.id) >= exercise.perCycle, html: card(exercise) });
+        group.items.push({ name: exercise.name, exercises: [exercise], completed: count(exercise.id) >= exercise.perCycle, html: card(exercise) });
       }
     }
-    $('#quick-list').innerHTML=data.exercises.length ? groups.filter(g=>g.items.length).map(g=>`<section><h3 class="group-title">${g.type}</h3><div class="stack">${g.items.sort((a,b)=>Number(a.completed)-Number(b.completed)||a.name.localeCompare(b.name)).map(item=>item.html).join('')}</div></section>`).join('') : '<div class="empty">No exercises yet.<button class="action" data-go="exercises">Go to List ↗</button></div>';
+    $('#quick-list').innerHTML=data.exercises.length ? groups.filter(g=>g.items.length).map(g=>{
+      const exercises = g.items.flatMap(item => item.exercises);
+      const ids = new Set(exercises.map(exercise => exercise.id));
+      const done = data.logs.filter(log => ids.has(log.exerciseId) && log.day >= data.cycleStart && dayNumber(log.day) < start + data.cycleLength).reduce((sum, log) => sum + log.sets, 0);
+      const total = exercises.reduce((sum, exercise) => sum + exercise.sets * exercise.perCycle, 0);
+      return `<section><div class="log-section-heading"><h3 class="group-title">${g.type}</h3><span class="cycle-sets">${done}/${total} sets</span></div><div class="stack">${g.items.sort((a,b)=>Number(a.completed)-Number(b.completed)||a.name.localeCompare(b.name)).map(item=>item.html).join('')}</div></section>`;
+    }).join('') : '<div class="empty">No exercises yet.<button class="action" data-go="exercises">Go to List ↗</button></div>';
     $('#exercise-list').innerHTML=data.exercises.length?categories.map(type=>{const items=data.exercises.filter(e=>e.type===type).sort((a,b)=>a.name.localeCompare(b.name));return items.length?`<h3 class="group-title">${type}</h3><div class="stack">${items.map(e=>card(e,true)).join('')}</div>`:''}).join(''):'<div class="empty" style="margin-top:16px">No exercises yet. Tap + to add your first one.</div>';
     renderHistory(); }
   function renderHistory() {
